@@ -1,0 +1,9 @@
+node_modules
+data
+.env*
+!.env.example
+*.nc
+*.zip
+scripts/soilscape.json
+.DS_Store
+.neon

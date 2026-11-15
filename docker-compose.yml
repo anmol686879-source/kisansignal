@@ -1,0 +1,10 @@
+services:
+  kisansignal:
+    build: .
+    ports: ["8080:8080"]
+    env_file: .env
+    environment: { TRUST_PROXY: "true" }
+    volumes: ["kisan-data:/data"]
+    restart: unless-stopped
+volumes:
+  kisan-data:

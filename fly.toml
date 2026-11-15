@@ -1,0 +1,22 @@
+app = "kisansignal"          # change to a unique name
+primary_region = "bom"       # Mumbai
+[build]
+[env]
+  PORT = "8080"
+  SMS_PROVIDER = "twilio"
+  TRUST_PROXY = "true"
+[[mounts]]
+  source = "kisan_data"
+  destination = "/data"
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  min_machines_running = 1
+  [[http_service.checks]]
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+# Secrets: fly secrets set OTP_SECRET=$(openssl rand -hex 32) TWILIO_ACCOUNT_SID=... TWILIO_AUTH_TOKEN=... TWILIO_FROM=+...
+# Create the volume once: fly volumes create kisan_data --size 1 --region bom
+# Keep a single machine: the database is a local SQLite file.
