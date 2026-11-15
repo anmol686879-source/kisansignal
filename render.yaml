@@ -1,5 +1,6 @@
 services:
-  - type: static
+  - type: web
     name: kisansignal
+    runtime: static
     buildCommand: echo "Publishing static demo"
     staticPublishPath: ./public
