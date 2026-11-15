@@ -1,9 +1,8 @@
-# KisanSignal (full-stack)
+# KisanSignal
 
-Farm-advice app with a Node backend: **real SMS one-time-code login** and **fields saved per account**
-(SQLite locally, PostgreSQL when `DATABASE_URL` is set). Weather and soil data still come from NASA POWER and
-Open-Meteo in the browser. The **Sensors** tab uses
-SoilSCAPE in-situ soil moisture (ORNL DAAC, doi 10.3334/ORNLDAAC/1339).
+Farm-advice app with an optional Node backend for accounts and saved fields. Weather and soil data come from
+NASA POWER and Open-Meteo in the browser. The **Sensors** tab uses SoilSCAPE in-situ soil moisture (ORNL DAAC,
+doi 10.3334/ORNLDAAC/1339).
 
     public/index.html     the app (served by the backend)
     server/               Express API + SQLite/PostgreSQL (Node 22+)
@@ -16,29 +15,26 @@ SoilSCAPE in-situ soil moisture (ORNL DAAC, doi 10.3334/ORNLDAAC/1339).
 In development the one-time code is printed in the server log and shown on the login screen
 (`SMS_PROVIDER=console`). That mode is refused when `NODE_ENV=production`.
 
-## Deploy (free-tier option)
-The included [Render Blueprint](./render.yaml) is configured for a free Render web service and PostgreSQL on
-[Neon's Free plan](https://neon.com/pricing). This uses PostgreSQL because Render free services have ephemeral
-filesystems; a SQLite database there would be lost whenever the service sleeps, restarts, or redeploys.
+## Deploy a free demo
+The included [Render Blueprint](./render.yaml) publishes `public/` as a free static site. With no backend, the app
+uses its browser-only demo login: a one-time demo code is shown in the interface and profile/field data stays in
+that browser's local storage. This is a demo, not real identity verification or cloud account storage. Do not enter
+real or sensitive personal information.
 
-1. Create a Neon project and copy its pooled PostgreSQL connection string. Keep `sslmode=require` in the URL.
-2. Push this project to a Git provider connected to Render, then create a new Render Blueprint from the repository.
-3. Enter the Neon connection string as `DATABASE_URL`, and add the Twilio Account SID, Auth Token, and sender
-   number or Messaging Service SID when Render requests the unsynchronized values.
-4. Deploy the Blueprint. It generates `OTP_SECRET`, requires PostgreSQL, enables proxy-aware IP handling, and checks
-   `/healthz` (including database connectivity).
+1. Push this repository to GitHub and connect it to Render.
+2. Create a Blueprint from the repository and deploy it. No database URL, SMS account, or secret is required for
+   the static demo.
 
-Free-tier caveats: Render free web services sleep after inactivity and can take about a minute to wake. Neon Free
-has usage limits and can scale to zero. Render says its free instances are for hobby/testing, not production.
-Real SMS delivery requires a configured SMS provider and may incur costs; Twilio trial accounts have restrictions.
-For India, register the sender ID and message template with DLT or carriers may block SMS.
+The Neon project is available for future backend development; it is not used by this static deployment. To enable
+real accounts and cross-device saved data later, deploy the Node API with PostgreSQL and configure a real SMS
+provider. Displaying an authentication code to every visitor is not safe for real accounts.
 
-For local development, run without a `.env` file to use SQLite and the console-only OTP provider, or set
-`NODE_ENV=development` and `SMS_PROVIDER=console` in your local `.env`. For a VPS or another host with a persistent
-disk, Docker Compose and Fly.io can still use the SQLite database at `/data/kisansignal.db`.
-Neon CLI stores your local connection in the ignored `.env.local`; `npm start` and `npm run dev` load it
-automatically. Never commit `.env` or `.env.local`.
-Always serve over HTTPS (the session cookie is `Secure` in production) and run **one instance** per SQLite database.
+For local development, run `npm install` then `npm start`. The backend uses SQLite and prints development OTPs
+to the server log. To use Neon locally, the Neon CLI stores the connection in ignored `.env.local`; `npm start`
+and `npm run dev` load it automatically. Never commit `.env` or `.env.local`.
+
+The optional API sets Secure session cookies in production and should always be served over HTTPS. Run one
+instance per SQLite database.
 
 ## API
 | Route | Purpose |
@@ -55,8 +51,8 @@ Security: codes are stored only as salted hashes; sessions only as hashes; per-I
 an Origin check (CSRF); strict CSP; field input validated server-side.
 
 ## Static-only mode
-If you host just `public/` on a static host (Netlify, GitHub Pages) the app detects there is no API and falls back
-to the old **demo** login (code shown on screen, data kept in the browser). Use that only for demos.
+Static hosting intentionally uses the **demo** login (code shown on screen, data kept in the browser). Use it only
+for demonstrations; it does not provide private accounts or cloud persistence.
 
 ## Refresh sensor data
     pip install netCDF4 numpy
